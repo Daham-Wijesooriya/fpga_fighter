@@ -1,0 +1,20 @@
+# Vivado project & build artifacts
+vivado_proj/
+*.jou
+*.log
+*.str
+*.pb
+*.wdb
+*.dmp
+.Xil/
+xsim.dir/
+
+# Icarus Verilog / simulation outputs
+*.vvp
+*.vcd
+*.ppm
+
+# Python bytecode
+__pycache__/
+*.pyc
+
