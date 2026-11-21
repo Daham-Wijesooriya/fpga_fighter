@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -Isim/obj_dir
+    - -I//wsl.localhost/Ubuntu/usr/share/verilator/include
+    - -I//wsl.localhost/Ubuntu/usr/include/SDL2

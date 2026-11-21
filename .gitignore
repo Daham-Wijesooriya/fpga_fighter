@@ -9,10 +9,12 @@ vivado_proj/
 .Xil/
 xsim.dir/
 
-# Icarus Verilog / simulation outputs
+# Icarus Verilog / Verilator / simulation outputs
 *.vvp
 *.vcd
 *.ppm
+sim/obj_dir/
+sim/vga_sim
 
 # Python bytecode
 __pycache__/

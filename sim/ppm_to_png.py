@@ -87,13 +87,25 @@ def convert_ppm_to_png(ppm_path: Path, png_path: Path) -> None:
 
 def main() -> int:
     default_ppm = Path("sim/vga_frame.ppm")
+    vivado_ppm = Path("vivado_proj/vivado_proj.sim/sim_1/behav/xsim/vga_frame.ppm")
     default_png = Path("sim/vga_frame.png")
 
-    ppm_path = Path(sys.argv[1]) if len(sys.argv) > 1 else default_ppm
+    if len(sys.argv) > 1:
+        ppm_path = Path(sys.argv[1])
+    elif default_ppm.exists():
+        ppm_path = default_ppm
+    elif vivado_ppm.exists():
+        ppm_path = vivado_ppm
+    else:
+        ppm_path = default_ppm
+
     png_path = Path(sys.argv[2]) if len(sys.argv) > 2 else default_png
 
     if not ppm_path.exists():
-        print(f"ERROR: Input PPM file not found: {ppm_path}", file=sys.stderr)
+        print(
+            f"ERROR: Input PPM file not found at {default_ppm} or {vivado_ppm}",
+            file=sys.stderr,
+        )
         return 1
 
     convert_ppm_to_png(ppm_path, png_path)

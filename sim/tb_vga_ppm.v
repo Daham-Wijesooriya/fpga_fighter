@@ -88,7 +88,11 @@ module tb_vga_ppm;
 
         fd = $fopen("sim/vga_frame.ppm", "w");
         if (fd == 0) begin
-            $display("ERROR: Could not open sim/vga_frame.ppm for writing.");
+            // Fallback for simulators (e.g. Vivado xsim) running in a build subdir
+            fd = $fopen("vga_frame.ppm", "w");
+        end
+        if (fd == 0) begin
+            $display("ERROR: Could not open vga_frame.ppm for writing.");
             $finish;
         end
 
