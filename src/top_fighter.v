@@ -28,21 +28,25 @@ module top_fighter (
 );
 
     // -------------------------------------------------------------------------
-    // Clock Divider: 100 MHz -> 25 MHz (divide-by-4, 50% duty cycle)
-    // Note: Clean and portable for simulation & initial bring-up. Can be
-    //       swapped for a Xilinx MMCM/Clocking Wizard for final timing closure.
+    // Pixel Clock Enable: 125 MHz (NI DSDB L18) -> 25 MHz (divide-by-5)
+    // Uses a synchronous clock enable on the single 125 MHz clock domain so
+    // Vivado sees zero derived/gated clocks and exact 25.000 MHz VGA timing.
     // -------------------------------------------------------------------------
-    reg [1:0] clk_div_cnt;
+    reg [2:0] clk_div_cnt;
+    reg       pix_ce;
 
     always @(posedge clk_100mhz or negedge rst_n) begin
         if (!rst_n) begin
-            clk_div_cnt <= 2'd0;
+            clk_div_cnt <= 3'd0;
+            pix_ce      <= 1'b0;
+        end else if (clk_div_cnt == 3'd4) begin
+            clk_div_cnt <= 3'd0;
+            pix_ce      <= 1'b1;
         end else begin
-            clk_div_cnt <= clk_div_cnt + 2'd1;
+            clk_div_cnt <= clk_div_cnt + 3'd1;
+            pix_ce      <= 1'b0;
         end
     end
-
-    wire clk_25mhz = clk_div_cnt[1];
 
     // -------------------------------------------------------------------------
     // VGA Timing Generator (640x480 @ 60Hz)
@@ -55,7 +59,8 @@ module top_fighter (
     wire       frame_tick; // 1-cycle 60 Hz pulse for future Phase 2 physics
 
     vga_sync u_vga_sync (
-        .clk_25mhz    (clk_25mhz),
+        .clk          (clk_100mhz),
+        .pix_ce       (pix_ce),
         .rst_n        (rst_n),
         .hsync        (hsync_raw),
         .vsync        (vsync_raw),
@@ -189,14 +194,14 @@ module top_fighter (
     // -------------------------------------------------------------------------
     // Registered VGA Outputs (RGB strictly forced to 0 during blanking)
     // -------------------------------------------------------------------------
-    always @(posedge clk_25mhz or negedge rst_n) begin
+    always @(posedge clk_100mhz or negedge rst_n) begin
         if (!rst_n) begin
             vga_r <= 5'd0;
             vga_g <= 6'd0;
             vga_b <= 5'd0;
             hsync <= 1'b1;
             vsync <= 1'b1;
-        end else begin
+        end else if (pix_ce) begin
             hsync <= hsync_raw;
             vsync <= vsync_raw;
             if (video_active) begin

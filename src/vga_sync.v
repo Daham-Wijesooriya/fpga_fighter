@@ -12,7 +12,8 @@
 `timescale 1ns / 1ps
 
 module vga_sync (
-    input  wire       clk_25mhz,
+    input  wire       clk,
+    input  wire       pix_ce,
     input  wire       rst_n,
     output wire       hsync,
     output wire       vsync,
@@ -52,11 +53,11 @@ module vga_sync (
     reg [9:0] h_cnt;
     reg [9:0] v_cnt;
 
-    always @(posedge clk_25mhz or negedge rst_n) begin
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             h_cnt <= 10'd0;
             v_cnt <= 10'd0;
-        end else begin
+        end else if (pix_ce) begin
             if (h_cnt == (H_TOTAL - 10'd1)) begin
                 h_cnt <= 10'd0;
                 if (v_cnt == (V_TOTAL - 10'd1)) begin
@@ -85,7 +86,7 @@ module vga_sync (
     assign pixel_y      = v_cnt;
 
     // Single-cycle 60 Hz pulse at the very first pixel of vertical blanking
-    assign frame_tick   = (h_cnt == 10'd0) && (v_cnt == V_VISIBLE);
+    assign frame_tick   = pix_ce && (h_cnt == 10'd0) && (v_cnt == V_VISIBLE);
 
 endmodule
 

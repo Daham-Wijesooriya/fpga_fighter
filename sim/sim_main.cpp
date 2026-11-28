@@ -9,7 +9,7 @@ static constexpr int H_RES = 640;
 static constexpr int V_RES = 480;
 static constexpr int H_BACK_PORCH = 48;
 static constexpr int V_BACK_PORCH = 33;
-static constexpr int CLK_PER_PIXEL = 4; // 100 MHz / 25 MHz = 4
+static constexpr int CLK_PER_PIXEL = 5; // 125 MHz / 25 MHz = 5
 
 int main(int argc, char **argv) {
   Verilated::commandArgs(argc, argv);

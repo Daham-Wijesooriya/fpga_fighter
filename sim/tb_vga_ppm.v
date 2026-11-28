@@ -41,11 +41,11 @@ module tb_vga_ppm;
     );
 
     // -------------------------------------------------------------------------
-    // 100 MHz System Clock (10 ns period)
+    // 125 MHz System Clock (8 ns period, matching NI DSDB L18 oscillator)
     // -------------------------------------------------------------------------
     initial begin
         clk_100mhz = 1'b0;
-        forever #5 clk_100mhz = ~clk_100mhz;
+        forever #4 clk_100mhz = ~clk_100mhz;
     end
 
     // -------------------------------------------------------------------------
@@ -58,15 +58,23 @@ module tb_vga_ppm;
     end
 
     // -------------------------------------------------------------------------
-    // Track 1-cycle registered output alignment with dut.video_active
+    // Track 1-cycle registered output alignment with dut.video_active & pix_ce
     // -------------------------------------------------------------------------
     reg active_d1;
+    reg pix_ce_d1;
+    reg frame_tick_d1;
 
-    always @(posedge dut.clk_25mhz or negedge rst_n) begin
+    always @(posedge clk_100mhz or negedge rst_n) begin
         if (!rst_n) begin
-            active_d1 <= 1'b0;
+            active_d1     <= 1'b0;
+            pix_ce_d1     <= 1'b0;
+            frame_tick_d1 <= 1'b0;
         end else begin
-            active_d1 <= dut.video_active;
+            pix_ce_d1     <= dut.pix_ce;
+            frame_tick_d1 <= dut.frame_tick;
+            if (dut.pix_ce) begin
+                active_d1 <= dut.video_active;
+            end
         end
     end
 
@@ -101,10 +109,10 @@ module tb_vga_ppm;
         $display("[tb_vga_ppm] Capturing 1 complete 640x480 frame...");
     end
 
-    // Sample on negedge clk_25mhz so registered outputs have settled
-    always @(negedge dut.clk_25mhz) begin
-        if (rst_n) begin
-            if (dut.frame_tick) begin
+    // Sample on negedge clk_100mhz on each pixel enable so registered outputs have settled
+    always @(negedge clk_100mhz) begin
+        if (rst_n && pix_ce_d1) begin
+            if (frame_tick_d1) begin
                 frame_tick_count = frame_tick_count + 1;
             end
 
